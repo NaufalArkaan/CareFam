@@ -49,3 +49,13 @@ export interface AdminStat {
   icon: string;
   color: string;         // hex aksen, dipakai sebagai inline style
 }
+
+// ===== Anggota Keluarga (Modul 2) =====
+export interface FamilyMember {
+  id: string;
+  name: string;
+  birthDate: string;
+  relationship: string;
+  emergencyContact?: string;
+}
+

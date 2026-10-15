@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Link } from 'expo-router';
 import { Header } from '../components/common/Header';
 import { InfoCard } from '../components/cards/InfoCard';
@@ -56,7 +56,9 @@ export default function UserDashboardScreen() {
                 <View key={item.id} style={{ width: fullWidth ? '100%' : '48%' }}>
                   {item.status === 'active' ? (
                     <Link href={item.route as any} asChild>
-                      {cardContent}
+                      <Pressable style={{ width: '100%' }}>
+                        {cardContent}
+                      </Pressable>
                     </Link>
                   ) : (
                     cardContent

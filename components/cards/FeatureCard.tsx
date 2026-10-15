@@ -1,33 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ViewProps } from 'react-native';
 import { FeatureItem } from '../../types';
 import { colors, spacing, radius, typography } from '../../constants/theme';
 
 // RUBRIK: Type & Array of Objects
-export interface FeatureCardProps {
+export interface FeatureCardProps extends ViewProps {
   item: FeatureItem;
 }
 
 // RUBRIK: External & Inline Styles
-export const FeatureCard: React.FC<FeatureCardProps> = ({ item }) => {
-  const isSoon = item.status === 'soon';
+// Menggunakan forwardRef agar kompatibel dengan Expo Router <Link asChild>
+export const FeatureCard = React.forwardRef<View, FeatureCardProps>(
+  ({ item, style, ...restProps }, ref) => {
+    const isSoon = item.status === 'soon';
 
-  return (
-    // RUBRIK: External & Inline Styles (Inline style untuk kelambutan transparan pada kartu status 'soon')
-    <View style={[styles.card, { opacity: isSoon ? 0.7 : 1.0 }]}>
-      <View style={styles.headerRow}>
-        <Text style={styles.icon}>{item.icon}</Text>
-        {isSoon ? (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Segera hadir</Text>
-          </View>
-        ) : null}
+    return (
+      // RUBRIK: External & Inline Styles (Inline style untuk kelambutan transparan pada kartu status 'soon')
+      <View
+        ref={ref}
+        style={[styles.card, { opacity: isSoon ? 0.7 : 1.0 }, style]}
+        {...restProps}
+      >
+        <View style={styles.headerRow}>
+          <Text style={styles.icon}>{item.icon}</Text>
+          {isSoon ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Segera hadir</Text>
+            </View>
+          ) : null}
+        </View>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
       </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
-    </View>
-  );
-};
+    );
+  }
+);
+
+FeatureCard.displayName = 'FeatureCard';
+
 
 const styles = StyleSheet.create({
   card: {

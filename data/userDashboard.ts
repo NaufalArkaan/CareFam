@@ -8,7 +8,7 @@ export const USER_FEATURES: FeatureItem[] = [
     description: 'Kelola profil keluarga',
     icon: '👨‍👩‍👧',
     route: '/family',
-    status: 'soon',
+    status: 'active',
   },
   {
     id: 2,
