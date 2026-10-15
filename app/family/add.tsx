@@ -61,12 +61,18 @@ export default function AddFamilyMemberScreen() {
     // Simpan ke in-memory store agar tetap ada selama sesi aplikasi
     addStoredFamilyMember(newMember);
 
-    // Kembali ke halaman daftar keluarga
+    // CHECKPOINT 3: Menggunakan router.replace() — Menggantikan rute /family/add di stack
+    // sehingga setelah form disimpan, layar form dibuang dari riwayat dan pengguna
+    // tidak bisa menekan tombol kembali (back) ke form yang sudah disubmit.
     router.replace('/family');
   };
 
   const handleCancel = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/family');
+    }
   };
 
   return (
@@ -81,11 +87,16 @@ export default function AddFamilyMemberScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Navigasi Kembali */}
+        {/* Navigasi Kembali menggunakan router.back() */}
         <View style={styles.navigationBar}>
-          <Link href="/family" style={styles.backButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Batal & Kembali ke Daftar"
+            style={styles.backButton}
+            onPress={handleCancel}
+          >
             <Text style={styles.backButtonText}>← Batal & Kembali ke Daftar</Text>
-          </Link>
+          </Pressable>
         </View>
 
         {/* Tampilan Pesan Error Validasi */}

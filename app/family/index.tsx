@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { Link } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { Header } from '../../components/common/Header';
 import { FamilyMemberCard } from '../../components/cards/FamilyMemberCard';
 import { FamilyMember } from '../../types';
@@ -13,6 +13,9 @@ import { colors } from '../../constants/theme';
 import { styles } from '../../styles/family.styles';
 
 export default function FamilyManagementScreen() {
+  // RUBRIK Modul 2: useRouter untuk navigasi imperatif (Robi)
+  const router = useRouter();
+
   // RUBRIK Modul 2: useState untuk mengelola daftar anggota keluarga
   const [members, setMembers] = useState<FamilyMember[]>(() => getStoredFamilyMembers());
 
@@ -55,6 +58,15 @@ export default function FamilyManagementScreen() {
     setSelectedMemberId(id);
   };
 
+  // CHECKPOINT 1: Handler navigasi imperatif menggunakan router.push()
+  const handleAddMember = () => {
+    router.push('/family/add');
+  };
+
+  const handleViewDetail = (id: string) => {
+    router.push(`/family/${id}`);
+  };
+
   // Handler simulasi kosongkan / kembalikan data untuk mempermudah demo pengujian
   const handleToggleSimulation = () => {
     if (members.length > 0) {
@@ -91,15 +103,14 @@ export default function FamilyManagementScreen() {
               : 'Belum ada anggota terdaftar'}
           </Text>
 
-          <Link href="/family/add" asChild>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Tambah Anggota Keluarga"
-              style={styles.addButton}
-            >
-              <Text style={styles.addButtonText}>+ Tambah Anggota</Text>
-            </Pressable>
-          </Link>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Tambah Anggota Keluarga"
+            style={styles.addButton}
+            onPress={handleAddMember}
+          >
+            <Text style={styles.addButtonText}>+ Tambah Anggota</Text>
+          </Pressable>
         </View>
 
         {/* Kondisional Tampilan: Daftar Anggota ATAU Empty State */}
@@ -110,6 +121,7 @@ export default function FamilyManagementScreen() {
               member={member}
               isSelected={selectedMemberId === member.id}
               onSelect={handleSelectMember}
+              onViewDetail={handleViewDetail}
             />
           ))
         ) : (
@@ -120,11 +132,14 @@ export default function FamilyManagementScreen() {
               Belum ada anggota keluarga yang terdaftar. Tambahkan anggota keluarga pertama Anda
               untuk mulai memantau kesehatannya.
             </Text>
-            <Link href="/family/add" asChild>
-              <Pressable style={styles.addButton}>
-                <Text style={styles.addButtonText}>+ Tambah Anggota Baru</Text>
-              </Pressable>
-            </Link>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tambah Anggota Baru"
+              style={styles.addButton}
+              onPress={handleAddMember}
+            >
+              <Text style={styles.addButtonText}>+ Tambah Anggota Baru</Text>
+            </Pressable>
           </View>
         )}
 

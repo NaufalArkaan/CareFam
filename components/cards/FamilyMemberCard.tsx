@@ -7,12 +7,14 @@ export interface FamilyMemberCardProps {
   member: FamilyMember;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  onViewDetail?: (id: string) => void;
 }
 
 export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({
   member,
   isSelected,
   onSelect,
+  onViewDetail,
 }) => {
   return (
     <View style={[styles.card, isSelected && styles.cardSelected]}>
@@ -49,8 +51,21 @@ export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({
         ) : null}
       </View>
 
-      {/* Aksi Pemilihan Profil */}
+      {/* Aksi Pemilihan Profil & Detail */}
       <View style={styles.cardFooter}>
+        {onViewDetail ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Lihat detail ${member.name}`}
+            style={styles.detailButton}
+            onPress={() => onViewDetail(member.id)}
+          >
+            <Text style={styles.detailButtonText}>Detail Profil →</Text>
+          </Pressable>
+        ) : (
+          <View />
+        )}
+
         {isSelected ? (
           <View style={styles.activeIndicator}>
             <Text style={styles.activeIndicatorText}>✓ Profil Aktif Dipantau</Text>
