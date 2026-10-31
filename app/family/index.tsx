@@ -63,14 +63,6 @@ export default function FamilyManagementScreen() {
   };
 
   // CHECKPOINT 1: Handler navigasi imperatif menggunakan router.push()
-  const handleProfile = () => {
-    rout.push("/family/profile");
-  };
-
-  const handleViewProfile = (id: string) => {
-    rout.push(`/family/${id}`);
-  };
-
   const handleAddMember = () => {
     rout.push("/family/add");
   };
@@ -105,23 +97,6 @@ export default function FamilyManagementScreen() {
           <Link href="/dashboard" style={styles.backButton}>
             <Text style={styles.backButtonText}>← Kembali ke Dashboard</Text>
           </Link>
-        </View>
-
-        <View style={styles.topActions}>
-          <Text style={styles.memberCountText}>
-            {members.length > 0
-              ? `${members.length} anggota keluarga terdaftar`
-              : "Belum ada anggota terdaftar"}
-          </Text>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Tambah Profile Keluarga"
-            style={styles.addButton}
-            onPress={handleProfile}
-          >
-            <Text style={styles.addButtonText}>Profile</Text>
-          </Pressable>
         </View>
 
         {/* Baris Ringkasan & Tombol Aksi */}
@@ -167,15 +142,6 @@ export default function FamilyManagementScreen() {
               style={styles.addButton}
               onPress={handleAddMember}
             >
-              {/*<Link href="/family/add" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Tambah Anggota Keluarga"
-                  style={styles.addButton}
-                >
-                  <Text style={styles.addButtonText}>+ Tambah Anggota</Text>
-                </Pressable>
-              </Link> */}
               <Text style={styles.addButtonText}>+ Tambah Anggota Baru</Text>
             </Pressable>
           </View>

@@ -1,13 +1,13 @@
 // RUBRIK: Type & Array of Objects (Theme Tokens)
 export const colors = {
-  primary: '#2F6F73',
-  secondary: '#A8C3B0',
-  background: '#F8F7F3',
-  accent: '#E89B8A',
-  text: '#263238',
-  surface: '#FFFFFF',
-  muted: '#5F6B70',
-  border: '#E3E1DA',
+  primary: "#3B82F6",
+  secondary: "#8B9CF6",
+  background: "#F3F8FF",
+  surface: "#FFFFFF",
+  accent: "#A78BFA",
+  text: "#172554",
+  muted: "#64748B",
+  border: "#E2E8F0",
 };
 
 export const spacing = {

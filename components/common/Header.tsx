@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     // RUBRIK: External & Inline Styles (Inline style untuk warna latar header dinamis sesuai peran)
     <View style={[styles.container, { backgroundColor }]}>
-      <Text style={styles.title}>{title}</Text>
+      {title ? <Text style={styles.title}>{title}</Text> : null}
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       {children}
     </View>
