@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { Header } from '../components/common/Header';
 import { InfoCard } from '../components/cards/InfoCard';
 import { FeatureCard } from '../components/cards/FeatureCard';
+import { WeatherCard } from '../components/cards/WeatherCard';
 import { PROFILE_INFO, USER_FEATURES } from '../data/userDashboard';
 import { getAccountsByRole } from '../utils/login';
 import { getGreeting } from '../utils/userDashboard';
@@ -36,6 +37,12 @@ export default function UserDashboardScreen() {
           {PROFILE_INFO.map((info) => (
             <InfoCard key={info.id} item={info} />
           ))}
+        </View>
+
+        {/* RUBRIK Modul 3: Weather Card (Custom & Pre-built Async Function - Naufal) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Kondisi Cuaca Hari Ini</Text>
+          <WeatherCard />
         </View>
 
         {/* Seksi Layanan Keluarga */}
