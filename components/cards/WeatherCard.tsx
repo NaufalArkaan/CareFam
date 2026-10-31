@@ -1,4 +1,4 @@
-// RUBRIK: Modul 3 — Custom & Pre-built Async Function (Naufal)
+// RUBRIK: Modul 3 — Asynchronous Programming (Naufal: async/await, Syahrial: Promise .then())
 
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -9,14 +9,15 @@ import {
   Pressable,
 } from 'react-native';
 import { loadCurrentWeather } from '../../services/weatherAsync';
+import { getWeatherWithPromise } from '../../services/weatherPromise';
 import { getWeatherDescription, getWeatherIcon } from '../../utils/weather';
 import type { WeatherData } from '../../types';
 import { colors, spacing, radius, typography } from '../../constants/theme';
 
 export interface WeatherCardProps {
   /**
-   * Opsional: Handler eksternal (misal alur Promise .then() dari Syahrial)
-   * untuk mendemonstrasikan variasi alur asynchronous tanpa double fetch otomatis.
+   * Opsional: Handler eksternal untuk mendemonstrasikan variasi alur asynchronous
+   * tanpa double fetch otomatis.
    */
   onCustomFetch?: () => Promise<WeatherData>;
 }
@@ -28,15 +29,14 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   /**
-   * CHECKPOINT 2 & 4: Custom Async Function handler dengan async/await,
-   * try-catch-finally, dan perlindungan state.
+   * RUBRIK Naufal (CHECKPOINT 2 & 4): Custom Async Function handler dengan async/await,
+   * digunakan untuk pemuatan awal (initial load) saat komponen dimuat.
    */
-  const handleFetchWeather = useCallback(async () => {
+  const handleInitialLoad = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      // Menggunakan handler kustom jika ada, atau default ke custom async function Naufal
       const data: WeatherData = onCustomFetch
         ? await onCustomFetch()
         : await loadCurrentWeather();
@@ -53,18 +53,56 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
           : 'Gagal terhubung ke layanan cuaca. Periksa koneksi internet Anda.';
       setErrorMessage(message);
     } finally {
-      // Memastikan loading selalu selesai baik saat sukses maupun terjadi error
       setIsLoading(false);
     }
   }, [onCustomFetch]);
 
-  // CHECKPOINT 4: Pemuatan awal tunggal saat mount, bebas dari infinite request loop
+  /**
+   * RUBRIK Syahrial (CHECKPOINT 3 & 4): Promise handler dengan .then(), .catch(), dan .finally()
+   *
+   * Digunakan saat user menekan tombol "Perbarui Cuaca" (Refresh) atau "Coba Lagi".
+   * - .then(): menerima nilai yang dihasilkan oleh resolve() dari Promise dan memperbarui UI.
+   * - .catch(): menangkap error yang dikirimkan oleh reject() saat terjadi kegagalan.
+   * - .finally(): selalu dieksekusi di akhir untuk memastikan indikator loading dimatikan.
+   */
+  const handleRefreshWithPromise = useCallback(() => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    const promiseSource = onCustomFetch
+      ? onCustomFetch()
+      : getWeatherWithPromise();
+
+    promiseSource
+      .then((data: WeatherData) => {
+        // Alur sukses: .then menerima nilai data yang dikirimkan resolve(data)
+        setWeather(data);
+        const now = new Date();
+        setLastUpdated(
+          `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+        );
+      })
+      .catch((err: unknown) => {
+        // Alur error: .catch menerima objek error yang diteruskan reject(error)
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Gagal terhubung ke layanan cuaca. Periksa koneksi internet Anda.';
+        setErrorMessage(message);
+      })
+      .finally(() => {
+        // Alur finalisasi: .finally selalu mengakhiri state loading
+        setIsLoading(false);
+      });
+  }, [onCustomFetch]);
+
+  // CHECKPOINT 4: Pemuatan awal tunggal saat mount menggunakan custom async function (mencegah loop request)
   useEffect(() => {
     let isMounted = true;
 
     async function initialLoad() {
       if (isMounted) {
-        await handleFetchWeather();
+        await handleInitialLoad();
       }
     }
 
@@ -73,7 +111,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
     return () => {
       isMounted = false;
     };
-  }, [handleFetchWeather]);
+  }, [handleInitialLoad]);
 
   return (
     <View style={styles.cardContainer}>
@@ -114,7 +152,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
               styles.retryButton,
               { opacity: pressed ? 0.8 : 1.0 },
             ]}
-            onPress={handleFetchWeather}
+            onPress={handleRefreshWithPromise}
           >
             <Text style={styles.retryButtonText}>Coba Lagi</Text>
           </Pressable>
@@ -149,7 +187,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
             </View>
           </View>
 
-          {/* Tombol Perbarui Cuaca (Refresh) */}
+          {/* Tombol Perbarui Cuaca (Refresh) - Menjalankan alur Promise .then() Syahrial */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Perbarui Data Cuaca"
@@ -157,7 +195,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onCustomFetch }) => {
               styles.refreshButton,
               { opacity: pressed ? 0.85 : 1.0 },
             ]}
-            onPress={handleFetchWeather}
+            onPress={handleRefreshWithPromise}
           >
             <Text style={styles.refreshButtonText}>🔄 Perbarui Cuaca</Text>
           </Pressable>
