@@ -34,8 +34,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
   // RUBRIK: Custom Function & Loop (Mendapatkan rute halaman utama sesuai peran)
   const homeRoute = getHomeRoute(role);
 
-  // Warna header beda role: Admin = text (gelap), User = transparan (di atas background gradasi lembut)
-  const headerBgColor = role === "admin" ? colors.text : "transparent";
+  const isAdmin = role === "admin";
+
+  // Warna header konsisten di kedua peran: transparan di atas background gradasi light blue yang lembut
+  const headerBgColor = "transparent";
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -50,52 +52,80 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
         >
           {/* Header Tema Peran */}
           <Header
-            title={content.title}
-            subtitle={content.subtitle}
+            title=""
+            subtitle=""
             backgroundColor={headerBgColor}
           >
-            {/* HERO SECTION: Dokter + Heart di KIRI | CareFam + Teks di KANAN */}
-            <View style={styles.heroRow}>
-              {/* SISI KIRI: Heart Dekoratif + Dokter */}
-              <View style={styles.heroLeft}>
-                {/* Heart Dekorasi di Belakang Dokter */}
-                <View style={styles.heartDecoration} pointerEvents="none">
-                  <Ionicons name="heart" size={170} color="#BFDBFE" />
-                </View>
-
-                {/* Gambar Dokter */}
-                <Image
-                  source={require("../../assets/images/docter.png")}
-                  style={styles.doctorImage}
-                  resizeMode="contain"
-                />
-              </View>
-
-              {/* SISI KANAN: Logo CareFam, Selamat Datang, Subtitle */}
-              <View style={styles.heroRight}>
-                {/* Logo & Nama CareFam */}
-                <View style={styles.brandRow}>
-                  <View style={styles.brandIconWrapper}>
-                    <Ionicons name="heart" size={18} color="#2563EB" />
+            {isAdmin ? (
+              <View style={styles.adminHeroContainer}>
+                {/* Branding Badge Subtle */}
+                <View style={styles.adminBadgeRow}>
+                  <View style={styles.adminIconBadge}>
+                    <Ionicons name="shield-checkmark" size={13} color="#2563EB" />
                   </View>
-                  <Text style={styles.brandTitle}>CareFam</Text>
+                  <Text style={styles.adminBrandText}>CareFam Admin</Text>
                 </View>
 
-                {/* Heading Selamat Datang */}
-                <Text
-                  style={styles.welcomeHeading}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  Selamat datang <Text style={styles.waveHand}>👋</Text>
-                </Text>
+                {/* Heading & Subtitle Admin */}
+                <Text style={styles.adminTitle}>{content.title}</Text>
+                <Text style={styles.adminSubtitle}>{content.subtitle}</Text>
 
-                {/* Subtitle */}
-                <Text style={styles.welcomeSubtitle}>
-                  Kelola kesehatan keluarga dengan lebih mudah.
-                </Text>
+                {/* Ilustrasi Dokter Compact */}
+                <View style={styles.adminDoctorContainer}>
+                  {/* Background shape light blue yang lembut */}
+                  <View style={styles.adminHeartShape} pointerEvents="none">
+                    <Ionicons name="heart" size={135} color="#BFDBFE" />
+                  </View>
+                  <Image
+                    source={require("../../assets/images/docter.png")}
+                    style={styles.adminDoctorImage}
+                    resizeMode="contain"
+                  />
+                </View>
               </View>
-            </View>
+            ) : (
+              <View style={styles.heroRow}>
+                {/* SISI KIRI: Heart Dekoratif + Dokter */}
+                <View style={styles.heroLeft}>
+                  {/* Heart Dekorasi di Belakang Dokter */}
+                  <View style={styles.heartDecoration} pointerEvents="none">
+                    <Ionicons name="heart" size={160} color="#BFDBFE" />
+                  </View>
+
+                  {/* Gambar Dokter */}
+                  <Image
+                    source={require("../../assets/images/docter.png")}
+                    style={styles.doctorImage}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                {/* SISI KANAN: Logo CareFam, Selamat Datang, Subtitle */}
+                <View style={styles.heroRight}>
+                  {/* Logo & Nama CareFam */}
+                  <View style={styles.brandRow}>
+                    <View style={styles.brandIconWrapper}>
+                      <Ionicons name="heart" size={18} color="#2563EB" />
+                    </View>
+                    <Text style={styles.brandTitle}>CareFam</Text>
+                  </View>
+
+                  {/* Heading Selamat Datang */}
+                  <Text
+                    style={styles.welcomeHeading}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    Selamat datang <Text style={styles.waveHand}>👋</Text>
+                  </Text>
+
+                  {/* Subtitle */}
+                  <Text style={styles.welcomeSubtitle}>
+                    Kelola kesehatan keluarga dengan lebih mudah.
+                  </Text>
+                </View>
+              </View>
+            )}
           </Header>
 
           {/* Form Card */}
@@ -184,7 +214,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
                   style={styles.altButton}
                 >
                   <Ionicons
-                    name="shield-checkmark-outline"
+                    name={isAdmin ? "arrow-back-outline" : "shield-checkmark-outline"}
                     size={17}
                     color="#2563EB"
                     style={styles.altButtonIcon}
@@ -196,13 +226,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
 
             {/* Kartu Akun Demo */}
             <View style={styles.demoSection}>
-              <Text style={styles.demoTitle}>Akun Demo Pengguna</Text>
+              <Text style={styles.demoTitle}>
+                {isAdmin ? "Akun Demo Admin" : "Akun Demo Pengguna"}
+              </Text>
 
               {/* RUBRIK: Type & Array of Objects (Render array of objects menggunakan map) */}
               {demoAccounts.map((account) => (
                 <View key={account.id} style={styles.accountCard}>
                   <View style={styles.accountIcon}>
-                    <Ionicons name="people" size={20} color="#2563EB" />
+                    <Ionicons
+                      name={isAdmin ? "shield-checkmark" : "people"}
+                      size={20}
+                      color="#2563EB"
+                    />
                   </View>
                   <View style={styles.accountInfo}>
                     <Text style={styles.accountName}>{account.name}</Text>

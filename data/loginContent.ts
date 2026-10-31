@@ -18,7 +18,7 @@ export const LOGIN_CONTENT: LoginContent[] = [
     title: "Admin Login",
     subtitle: "Masuk menggunakan akun admin",
     buttonLabel: "Masuk sebagai Admin",
-    accentColor: "#263238",
+    accentColor: "#2563EB",
     altLabel: "Kembali ke login pengguna",
     altRoute: "/login",
   },

@@ -109,6 +109,75 @@ export const loginStyles = StyleSheet.create({
     fontWeight: "400",
   },
 
+  // ADMIN HERO SECTION
+  adminHeroContainer: {
+    alignItems: "center",
+    paddingTop: 6,
+    marginBottom: -16,
+    position: "relative",
+  },
+
+  adminBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+    marginBottom: 6,
+  },
+
+  adminIconBadge: {
+    marginRight: 6,
+  },
+
+  adminBrandText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#2563EB",
+    letterSpacing: 0.3,
+  },
+
+  adminTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#0F172A",
+    textAlign: "center",
+    letterSpacing: -0.3,
+  },
+
+  adminSubtitle: {
+    fontSize: 13,
+    color: "#64748B",
+    textAlign: "center",
+    marginTop: 4,
+    marginBottom: 8,
+  },
+
+  adminDoctorContainer: {
+    width: 130,
+    height: 145,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    position: "relative",
+  },
+
+  adminHeartShape: {
+    position: "absolute",
+    top: 5,
+    alignSelf: "center",
+    opacity: 0.45,
+    zIndex: 1,
+  },
+
+  adminDoctorImage: {
+    width: 105,
+    height: 140,
+    zIndex: 2,
+  },
+
   // LOGIN CARD
   card: {
     backgroundColor: "#FFFFFF",
