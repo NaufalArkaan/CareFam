@@ -59,3 +59,6 @@ export interface FamilyMember {
   emergencyContact?: string;
 }
 
+// ===== Cuaca & External API (Modul 3 - Robi) =====
+export * from './weather';
+
