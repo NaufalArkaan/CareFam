@@ -199,6 +199,96 @@ export const loginStyles = StyleSheet.create({
     elevation: 6,
   },
 
+  // Tab Toggle Mode (Masuk vs Daftar)
+  modeToggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 18,
+  },
+
+  modeToggleTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+  },
+
+  modeToggleActiveTab: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  modeToggleText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+
+  modeToggleActiveText: {
+    color: "#2563EB",
+    fontWeight: "700",
+  },
+
+  // Alert Feedback Boxes
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+
+  errorIcon: {
+    marginRight: 8,
+  },
+
+  errorText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#DC2626",
+    fontWeight: "500",
+    lineHeight: 17,
+  },
+
+  successBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0FDF4",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+
+  successIcon: {
+    marginRight: 8,
+  },
+
+  successText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#16A34A",
+    fontWeight: "500",
+    lineHeight: 17,
+  },
+
+  buttonDisabled: {
+    opacity: 0.65,
+  },
+
   // Form Fields
   fieldGroup: {
     marginBottom: 16,

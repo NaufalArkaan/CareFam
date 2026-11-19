@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Header } from '../components/common/Header';
 import { InfoCard } from '../components/cards/InfoCard';
 import { FeatureCard } from '../components/cards/FeatureCard';
@@ -11,8 +11,22 @@ import { getGreeting } from '../utils/userDashboard';
 import { getSummaryText, isFullWidthCard } from '../utils/features';
 import { colors } from '../constants/theme';
 import { styles } from '../styles/userDashboard.styles';
+import { signOutUser } from '../services/authService';
 
 export default function UserDashboardScreen() {
+  const router = useRouter();
+
+  // CHECKPOINT 5: Sign Out handler resmi Supabase Auth
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+    } catch {
+      // Abaikan error jaringan agar user tetap bisa kembali ke layar login
+    } finally {
+      router.replace('/login');
+    }
+  };
+
   // RUBRIK: Custom Function & Loop (Mengambil data akun demo user dan menyapa pengguna)
   const userAccount = getAccountsByRole('user')[0];
   const greeting = getGreeting(userAccount ? userAccount.name : 'Pengguna');
@@ -83,11 +97,15 @@ export default function UserDashboardScreen() {
           </Text>
         </View>
 
-        {/* Tautan Keluar */}
+        {/* Tautan Keluar (Sign Out) */}
         <View style={styles.logoutContainer}>
-          <Link href="/login" style={styles.logoutText}>
-            Keluar
-          </Link>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Keluar dari Akun"
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutText}>Keluar</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </View>
