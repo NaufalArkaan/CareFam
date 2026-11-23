@@ -50,13 +50,16 @@ export interface AdminStat {
   color: string;         // hex aksen, dipakai sebagai inline style
 }
 
-// ===== Anggota Keluarga (Modul 2) =====
+// ===== Anggota Keluarga (Modul 2 & 4) =====
 export interface FamilyMember {
   id: string;
   name: string;
   birthDate: string;
   relationship: string;
   emergencyContact?: string;
+  gender?: string;
+  bloodType?: string;
+  allergies?: string;
 }
 
 // ===== Cuaca & External API (Modul 3 - Robi) =====

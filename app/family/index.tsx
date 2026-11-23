@@ -1,6 +1,6 @@
 import { Link, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { FamilyMemberCard } from "../../components/cards/FamilyMemberCard";
 import { Header } from "../../components/common/Header";
 import { colors } from "../../constants/theme";
@@ -9,6 +9,7 @@ import {
   INITIAL_FAMILY_MEMBERS,
   subscribeFamilyMembers,
 } from "../../data/familyMembers";
+import { getFamilyMembers } from "../../services/familyService";
 import { styles } from "../../styles/family.styles";
 import { FamilyMember } from "../../types";
 
@@ -27,14 +28,46 @@ export default function FamilyManagementScreen() {
     return initialList.length > 0 ? initialList[0].id : "";
   });
 
-  // RUBRIK Modul 2: useEffect 1 — Berlangganan ke perubahan data store agar anggota baru yang ditambahkan
-  // di form tetap terlihat seketika saat kembali ke daftar ini
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // Memuat data anggota keluarga dari database Supabase
+  const loadMembersFromDb = useCallback(async (refresh = false) => {
+    if (refresh) setIsRefreshing(true);
+    else setIsLoading(true);
+
+    try {
+      const dbMembers = await getFamilyMembers();
+      if (dbMembers && dbMembers.length > 0) {
+        setMembers(dbMembers);
+        setSelectedMemberId((prev) => {
+          const exists = dbMembers.some((m) => m.id === prev);
+          return exists ? prev : dbMembers[0].id;
+        });
+      } else {
+        // Fallback ke local store jika belum ada data di Supabase
+        const localList = getStoredFamilyMembers();
+        setMembers(localList);
+      }
+    } catch (err) {
+      console.warn("[FamilyScreen] Fallback ke local data:", err);
+      setMembers(getStoredFamilyMembers());
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMembersFromDb();
+  }, [loadMembersFromDb]);
+
+  // RUBRIK Modul 2: useEffect 1 — Berlangganan ke perubahan data store lokal
   useEffect(() => {
     const unsubscribe = subscribeFamilyMembers(() => {
       setMembers(getStoredFamilyMembers());
     });
 
-    // Cleanup listener saat komponen unmount untuk menghindari kebocoran memori
     return () => {
       unsubscribe();
     };
@@ -51,7 +84,6 @@ export default function FamilyManagementScreen() {
         (member) => member.id === selectedMemberId,
       );
       if (!isCurrentSelectedValid) {
-        // Otomatis memilih anggota pertama jika profil terpilih sebelumnya tidak ditemukan
         setSelectedMemberId(members[0].id);
       }
     }
@@ -71,7 +103,7 @@ export default function FamilyManagementScreen() {
     rout.push(`/family/${id}`);
   };
 
-  // Handler simulasi kosongkan / kembalikan data untuk mempermudah demo pengujian
+  // Handler simulasi kosongkan / kembalikan data untuk demo pengujian
   const handleToggleSimulation = () => {
     if (members.length > 0) {
       setMembers([]);
@@ -91,7 +123,16 @@ export default function FamilyManagementScreen() {
         backgroundColor={colors.primary}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => loadMembersFromDb(true)}
+            colors={[colors.primary]}
+          />
+        }
+      >
         {/* Navigasi Kembali ke Dashboard */}
         <View style={styles.navigationBar}>
           <Link href="/dashboard" style={styles.backButton}>
@@ -117,8 +158,14 @@ export default function FamilyManagementScreen() {
           </Pressable>
         </View>
 
-        {/* Kondisional Tampilan: Daftar Anggota ATAU Empty State */}
-        {members.length > 0 ? (
+        {isLoading && !isRefreshing ? (
+          <View style={{ paddingVertical: 32, alignItems: "center" }}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={{ marginTop: 8, color: colors.muted }}>
+              Memuat data keluarga dari database...
+            </Text>
+          </View>
+        ) : members.length > 0 ? (
           members.map((member) => (
             <FamilyMemberCard
               key={member.id}

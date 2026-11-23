@@ -1,22 +1,45 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Header } from '../components/common/Header';
 import { InfoCard } from '../components/cards/InfoCard';
 import { FeatureCard } from '../components/cards/FeatureCard';
 import { WeatherCard } from '../components/cards/WeatherCard';
-import { PROFILE_INFO, USER_FEATURES } from '../data/userDashboard';
-import { getAccountsByRole } from '../utils/login';
+import { USER_FEATURES } from '../data/userDashboard';
 import { getGreeting } from '../utils/userDashboard';
 import { getSummaryText, isFullWidthCard } from '../utils/features';
 import { colors } from '../constants/theme';
 import { styles } from '../styles/userDashboard.styles';
 import { signOutUser } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { getUserDashboardData, UserDashboardData } from '../services/familyService';
+import { InfoItem } from '../types';
 
 export default function UserDashboardScreen() {
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+
+  // State data pengguna aktual dari database Supabase
+  const [dashboardData, setDashboardData] = useState<UserDashboardData>({
+    email: user?.email || 'user@carefam.test',
+    callsign: user?.user_metadata?.callsign || 'Keluarga',
+    fullName: user?.user_metadata?.full_name || 'Pengguna CareFam',
+    memberCount: 0,
+    isLoading: true,
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Memuat data aktual dari Supabase
+  const loadData = useCallback(async (refresh = false) => {
+    if (refresh) setIsRefreshing(true);
+    const data = await getUserDashboardData();
+    setDashboardData(data);
+    if (refresh) setIsRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // CHECKPOINT 5: Sign Out handler resmi Supabase Auth
   const handleLogout = async () => {
@@ -25,14 +48,35 @@ export default function UserDashboardScreen() {
       await signOutUser();
       router.replace('/login');
     } catch (error) {
-      console.error("[UserDashboard] Gagal melakukan logout:", error);
+      console.error('[UserDashboard] Gagal melakukan logout:', error);
     }
   };
 
-  // RUBRIK: Custom Function & Loop (Mengambil data akun demo user dan menyapa pengguna)
-  const userAccount = getAccountsByRole('user')[0];
-  const greeting = getGreeting(userAccount ? userAccount.name : 'Pengguna');
+  // Sapaan personal berdasarkan callsign aktual dari database
+  const greeting = getGreeting(dashboardData.callsign || 'Pengguna');
   const summaryText = getSummaryText(USER_FEATURES, 'layanan');
+
+  // RUBRIK: Type & Array of Objects (Dihasilkan dinamis dari database Supabase)
+  const dynamicProfileInfo: InfoItem[] = [
+    {
+      id: 1,
+      label: 'Email',
+      value: dashboardData.email,
+      icon: '📧',
+    },
+    {
+      id: 2,
+      label: 'Anggota keluarga',
+      value: `${dashboardData.memberCount} orang`,
+      icon: '👥',
+    },
+    {
+      id: 3,
+      label: 'Status akun',
+      value: 'Aktif',
+      icon: '✅',
+    },
+  ];
 
   return (
     <View style={styles.container}>
@@ -45,12 +89,21 @@ export default function UserDashboardScreen() {
         <Text style={styles.greetingText}>{greeting}</Text>
       </Header>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Seksi Profil Pengguna */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={() => loadData(true)}
+            colors={[colors.primary]}
+          />
+        }
+      >
+        {/* Seksi Profil Pengguna Terhubung Supabase */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Akun dan profil pengguna</Text>
-          {/* RUBRIK: Type & Array of Objects (PROFILE_INFO di-map ke komponen InfoCard) */}
-          {PROFILE_INFO.map((info) => (
+          {/* RUBRIK: Type & Array of Objects (InfoItem di-map ke komponen InfoCard) */}
+          {dynamicProfileInfo.map((info) => (
             <InfoCard key={info.id} item={info} />
           ))}
         </View>
@@ -75,7 +128,7 @@ export default function UserDashboardScreen() {
               const cardContent = <FeatureCard item={item} />;
 
               return (
-                /* RUBRIK: Inline & External Styles (Inline style untuk menentukan lebar kartu grid: 100% jika total ganjil & item terakhir, 48% untuk dua kolom) */
+                /* RUBRIK: Inline & External Styles */
                 <View key={item.id} style={{ width: fullWidth ? '100%' : '48%' }}>
                   {item.status === 'active' ? (
                     <Link href={item.route as any} asChild>

@@ -7,11 +7,13 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Header } from '../../components/common/Header';
 import { FamilyMember } from '../../types';
 import { addStoredFamilyMember } from '../../data/familyMembers';
+import { addFamilyMemberToDatabase } from '../../services/familyService';
 import { colors } from '../../constants/theme';
 import { styles } from '../../styles/family.styles';
 
@@ -35,36 +37,51 @@ export default function AddFamilyMemberScreen() {
   const [birthDate, setBirthDate] = useState<string>('');
   const [relationship, setRelationship] = useState<string>('');
   const [emergencyContact, setEmergencyContact] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // RUBRIK Modul 2: useState untuk pesan validasi error
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Handler simpan anggota keluarga baru
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validasi sederhana: field wajib tidak boleh kosong
     if (!name.trim() || !birthDate.trim() || !relationship.trim()) {
       setErrorMessage('Field dengan tanda (*) wajib diisi: Nama, Tanggal Lahir, dan Hubungan.');
       return;
     }
 
-    // Bersihkan pesan error jika valid
     setErrorMessage('');
+    setIsSubmitting(true);
 
-    const newMember: FamilyMember = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      birthDate: birthDate.trim(),
-      relationship: relationship.trim(),
-      emergencyContact: emergencyContact.trim() || undefined,
-    };
+    try {
+      // 1. Simpan ke database Supabase
+      const savedMember = await addFamilyMemberToDatabase({
+        name: name.trim(),
+        birthDate: birthDate.trim(),
+        relationship: relationship.trim(),
+        emergencyContact: emergencyContact.trim() || undefined,
+      });
 
-    // Simpan ke in-memory store agar tetap ada selama sesi aplikasi
-    addStoredFamilyMember(newMember);
+      // 2. Simpan juga ke local store untuk sinkronisasi state instan
+      addStoredFamilyMember(savedMember);
 
-    // CHECKPOINT 3: Menggunakan router.replace() — Menggantikan rute /family/add di stack
-    // sehingga setelah form disimpan, layar form dibuang dari riwayat dan pengguna
-    // tidak bisa menekan tombol kembali (back) ke form yang sudah disubmit.
-    router.replace('/family');
+      // CHECKPOINT 3: Menggunakan router.replace() — kembali ke daftar
+      router.replace('/family');
+    } catch (err: unknown) {
+      console.warn('[AddFamily] Error menyimpan ke Supabase:', err);
+      // Fallback: simpan ke in-memory store
+      const fallbackMember: FamilyMember = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        birthDate: birthDate.trim(),
+        relationship: relationship.trim(),
+        emergencyContact: emergencyContact.trim() || undefined,
+      };
+      addStoredFamilyMember(fallbackMember);
+      router.replace('/family');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -99,16 +116,16 @@ export default function AddFamilyMemberScreen() {
           </Pressable>
         </View>
 
-        {/* Tampilan Pesan Error Validasi */}
-        {errorMessage ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
-          </View>
-        ) : null}
-
-        {/* Kartu Form Input */}
+        {/* Card Formulir Pendaftaran */}
         <View style={styles.formCard}>
-          {/* Input 1: Nama Lengkap (Wajib) */}
+          {/* Banner Pesan Error Validasi */}
+          {errorMessage ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          ) : null}
+
+          {/* Field: Nama Lengkap */}
           <View style={styles.inputGroup}>
             <View style={styles.inputLabelRow}>
               <Text style={styles.inputLabel}>Nama Lengkap</Text>
@@ -119,66 +136,53 @@ export default function AddFamilyMemberScreen() {
               placeholder="Contoh: Siti Rahma"
               placeholderTextColor={colors.muted}
               value={name}
-              onChangeText={(text) => {
-                setName(text);
-                if (errorMessage) setErrorMessage('');
-              }}
-              accessibilityLabel="Input Nama Lengkap"
+              onChangeText={setName}
+              autoCapitalize="words"
             />
           </View>
 
-          {/* Input 2: Tanggal Lahir (Wajib) */}
+          {/* Field: Tanggal Lahir */}
           <View style={styles.inputGroup}>
             <View style={styles.inputLabelRow}>
-              <Text style={styles.inputLabel}>Tanggal Lahir</Text>
+              <Text style={styles.inputLabel}>Tanggal Lahir (YYYY-MM-DD)</Text>
               <Text style={styles.requiredStar}>*</Text>
             </View>
             <TextInput
               style={styles.textInput}
-              placeholder="YYYY-MM-DD (Contoh: 1995-04-12)"
+              placeholder="Contoh: 1984-08-20"
               placeholderTextColor={colors.muted}
               value={birthDate}
-              onChangeText={(text) => {
-                setBirthDate(text);
-                if (errorMessage) setErrorMessage('');
-              }}
-              accessibilityLabel="Input Tanggal Lahir"
+              onChangeText={setBirthDate}
+              keyboardType="numbers-and-punctuation"
             />
-            <Text style={styles.inputHint}>Format: YYYY-MM-DD atau tanggal lahir anggota</Text>
           </View>
 
-          {/* Input 3: Hubungan Keluarga (Wajib) */}
+          {/* Field: Hubungan Keluarga (Pilihan Cepat) */}
           <View style={styles.inputGroup}>
             <View style={styles.inputLabelRow}>
               <Text style={styles.inputLabel}>Hubungan Keluarga</Text>
               <Text style={styles.requiredStar}>*</Text>
             </View>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Pilih dari opsi di bawah atau ketik sendiri"
-              placeholderTextColor={colors.muted}
-              value={relationship}
-              onChangeText={(text) => {
-                setRelationship(text);
-                if (errorMessage) setErrorMessage('');
-              }}
-              accessibilityLabel="Input Hubungan Keluarga"
-            />
-
-            {/* Pilihan Cepat Hubungan Keluarga */}
             <View style={styles.chipsContainer}>
               {RELATIONSHIP_OPTIONS.map((option) => {
                 const isSelected = relationship === option;
                 return (
                   <Pressable
                     key={option}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                    onPress={() => {
-                      setRelationship(option);
-                      if (errorMessage) setErrorMessage('');
-                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Pilih hubungan ${option}`}
+                    style={[
+                      styles.chip,
+                      isSelected && styles.chipSelected,
+                    ]}
+                    onPress={() => setRelationship(option)}
                   >
-                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && styles.chipTextSelected,
+                      ]}
+                    >
                       {option}
                     </Text>
                   </Pressable>
@@ -187,7 +191,7 @@ export default function AddFamilyMemberScreen() {
             </View>
           </View>
 
-          {/* Input 4: Kontak Darurat (Opsional) */}
+          {/* Field: Kontak Darurat (Opsional) */}
           <View style={styles.inputGroup}>
             <View style={styles.inputLabelRow}>
               <Text style={styles.inputLabel}>Kontak Darurat</Text>
@@ -197,32 +201,36 @@ export default function AddFamilyMemberScreen() {
               style={styles.textInput}
               placeholder="Contoh: 0812-3456-7890"
               placeholderTextColor={colors.muted}
-              keyboardType="phone-pad"
               value={emergencyContact}
               onChangeText={setEmergencyContact}
-              accessibilityLabel="Input Kontak Darurat Opsional"
+              keyboardType="phone-pad"
             />
-            <Text style={styles.inputHint}>Nomor telepon darurat jika berbeda dari akun utama</Text>
           </View>
 
-          {/* Tombol Aksi Form */}
+          {/* Tombol Simpan & Batal */}
           <View style={styles.formButtonRow}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Batal"
               style={styles.cancelButton}
               onPress={handleCancel}
+              disabled={isSubmitting}
             >
               <Text style={styles.cancelButtonText}>Batal</Text>
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Simpan Anggota Keluarga"
-              style={styles.submitButton}
+              accessibilityLabel="Simpan Anggota"
+              style={[styles.submitButton, isSubmitting && { opacity: 0.6 }]}
               onPress={handleSubmit}
+              disabled={isSubmitting}
             >
-              <Text style={styles.submitButtonText}>Simpan Anggota</Text>
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Simpan Anggota</Text>
+              )}
             </Pressable>
           </View>
         </View>
