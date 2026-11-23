@@ -45,7 +45,7 @@ export interface InfoItem {
 export interface AdminStat {
   id: number;
   label: string;
-  value: number;
+  value: number | string | null;
   icon: string;
   color: string;         // hex aksen, dipakai sebagai inline style
 }

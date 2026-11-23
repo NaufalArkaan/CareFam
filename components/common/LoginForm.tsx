@@ -100,21 +100,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
         const data = await signUpUser({
           email: cleanEmail,
           password,
-          callsign: callsign.trim(),
+          callsign,
         });
 
-        // Evaluasi apakah konfirmasi email diwajibkan oleh Supabase
-        if (data.user && !data.session) {
-          setSuccessMessage(
-            "Pendaftaran berhasil! Tautan konfirmasi telah dikirim ke email Anda. Silakan verifikasi sebelum masuk."
-          );
-          setIsRegistering(false);
-        } else if (data.session) {
-          setSuccessMessage("Pendaftaran berhasil! Mengalihkan ke dashboard...");
+        // Tangani kemungkinan konfirmasi email
+        if (data.session) {
+          // Berhasil mendaftar dan langsung mendapatkan sesi
           router.replace(homeRoute as Href);
         } else {
-          setSuccessMessage("Pendaftaran berhasil! Silakan masuk dengan akun Anda.");
+          // Memerlukan konfirmasi email
+          setSuccessMessage(
+            "Pendaftaran berhasil! Silakan periksa email Anda untuk konfirmasi aktivasi akun, kemudian masuk."
+          );
           setIsRegistering(false);
+          setPassword("");
         }
       } else {
         // CHECKPOINT 4: Sign In via Supabase
@@ -149,7 +148,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient
-        colors={["#E6F1FC", "#EFF6FD", "#FFFFFF"]}
+        colors={["#EFF6FF", "#F8FAFC", "#FFFFFF"]}
         locations={[0, 0.35, 1]}
         style={styles.gradientContainer}
       >
@@ -259,6 +258,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
                     Masuk
                   </Text>
                 </Pressable>
+
                 <Pressable
                   accessibilityRole="tab"
                   accessibilityLabel="Tab Daftar Akun"
@@ -285,70 +285,75 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
               </View>
             )}
 
-            {/* Banner Error */}
-            {errorMessage ? (
+            {/* Error Message Box */}
+            {errorMessage && (
               <View style={styles.errorBox}>
                 <Ionicons
                   name="alert-circle"
                   size={18}
-                  color="#DC2626"
-                  style={styles.errorIcon}
+                  color="#EF4444"
+                  style={styles.alertIcon}
                 />
                 <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
-            ) : null}
+            )}
 
-            {/* Banner Sukses */}
-            {successMessage ? (
+            {/* Success Message Box */}
+            {successMessage && (
               <View style={styles.successBox}>
                 <Ionicons
                   name="checkmark-circle"
                   size={18}
-                  color="#16A34A"
-                  style={styles.successIcon}
+                  color="#10B981"
+                  style={styles.alertIcon}
                 />
                 <Text style={styles.successText}>{successMessage}</Text>
               </View>
-            ) : null}
+            )}
 
-            {/* Callsign Field (Muncul khusus saat registrasi) */}
-            {isRegistering ? (
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Nama Panggilan (Callsign)</Text>
-                <View style={styles.inputContainer}>
+            {/* Field Callsign (Hanya saat Registrasi User) */}
+            {isRegistering && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>
+                  Nama Panggilan (Callsign) <Text style={styles.requiredStar}>*</Text>
+                </Text>
+                <View style={styles.inputWrapper}>
                   <Ionicons
                     name="person-outline"
-                    size={19}
+                    size={20}
                     color="#94A3B8"
-                    style={styles.inputLeadingIcon}
+                    style={styles.inputIcon}
                   />
                   <TextInput
-                    style={styles.input}
-                    placeholder="misal: Ayah Budi / Naufal"
+                    style={styles.textInput}
+                    placeholder="Contoh: Ayah Budi / Ibu Siti"
                     placeholderTextColor="#94A3B8"
                     value={callsign}
                     onChangeText={setCallsign}
                     autoCapitalize="words"
                     editable={!isLoading}
-                    accessibilityLabel="Input Nama Panggilan"
                   />
                 </View>
               </View>
-            ) : null}
+            )}
 
-            {/* Email Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Email</Text>
-              <View style={styles.inputContainer}>
+            {/* Field Email */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>
+                Alamat Email <Text style={styles.requiredStar}>*</Text>
+              </Text>
+              <View style={styles.inputWrapper}>
                 <Ionicons
                   name="mail-outline"
-                  size={19}
+                  size={20}
                   color="#94A3B8"
-                  style={styles.inputLeadingIcon}
+                  style={styles.inputIcon}
                 />
                 <TextInput
-                  style={styles.input}
-                  placeholder="contoh@carefam.test"
+                  style={styles.textInput}
+                  placeholder={
+                    isAdmin ? "admin@carefam.test" : "nama@email.com"
+                  }
                   placeholderTextColor="#94A3B8"
                   value={email}
                   onChangeText={setEmail}
@@ -356,62 +361,64 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isLoading}
-                  accessibilityLabel="Input Email"
                 />
               </View>
             </View>
 
-            {/* Password Field */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Kata sandi</Text>
-              <View style={styles.inputContainer}>
+            {/* Field Password */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>
+                Kata Sandi <Text style={styles.requiredStar}>*</Text>
+              </Text>
+              <View style={styles.inputWrapper}>
                 <Ionicons
                   name="lock-closed-outline"
-                  size={19}
+                  size={20}
                   color="#94A3B8"
-                  style={styles.inputLeadingIcon}
+                  style={styles.inputIcon}
                 />
                 <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
+                  style={styles.textInput}
+                  placeholder="Minimal 6 karakter"
                   placeholderTextColor="#94A3B8"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
-                  autoCapitalize="none"
                   editable={!isLoading}
-                  accessibilityLabel="Input Kata Sandi"
                 />
                 <Pressable
-                  onPress={() => setShowPassword((prev) => !prev)}
                   accessibilityRole="button"
-                  accessibilityLabel={
-                    showPassword
-                      ? "Sembunyikan Kata Sandi"
-                      : "Tampilkan Kata Sandi"
-                  }
-                  hitSlop={8}
+                  accessibilityLabel={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
                 >
                   <Ionicons
-                    name={showPassword ? "eye-outline" : "eye-off-outline"}
-                    size={19}
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
                     color="#94A3B8"
-                    style={styles.inputTrailingIcon}
                   />
                 </Pressable>
               </View>
             </View>
 
-            {/* Options: Ingat saya & Lupa kata sandi? */}
-            {!isRegistering ? (
+            {/* Opsi Tambahan: Ingat Saya & Lupa Sandi */}
+            {!isRegistering && (
               <View style={styles.optionsRow}>
-                <View style={styles.rememberContainer}>
+                <View style={styles.rememberMeContainer}>
                   <Ionicons name="checkbox" size={18} color="#2563EB" />
-                  <Text style={styles.rememberText}>Ingat saya</Text>
+                  <Text style={styles.rememberMeText}>Ingat saya</Text>
                 </View>
-                <Text style={styles.forgotText}>Lupa kata sandi?</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Lupa kata sandi"
+                  onPress={() => {
+                    alert("Fitur reset kata sandi dapat dilakukan melalui email yang terdaftar.");
+                  }}
+                >
+                  <Text style={styles.forgotText}>Lupa sandi?</Text>
+                </Pressable>
               </View>
-            ) : null}
+            )}
 
             {/* CHECKPOINT 6: Tombol Submit dengan Loading & Proteksi Multiple Submission */}
             <View style={styles.buttonContainer}>

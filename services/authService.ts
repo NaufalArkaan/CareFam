@@ -86,14 +86,23 @@ export async function signInUser({
  *
  * Mengakhiri sesi aktif pengguna di Supabase:
  * - Menggunakan method resmi supabase.auth.signOut().
- * - Memastikan status logout disiarkan (broadcast) melalui event SIGNED_OUT
- *   sehingga dapat ditangkap oleh AuthContext milik Robi dan Route Guard milik Syahrial.
- * - Menghindari penghapusan token lokal secara parsial/manual.
+ * - Dilengkapi fallback ke scope: 'local' jika terjadi kendala jaringan/token kedaluwarsa,
+ *   sehingga token lokal di SecureStore dijamin selalu terhapus.
+ * - Memastikan event SIGNED_OUT disiarkan ke AuthContext.
  */
 export async function signOutUser(): Promise<void> {
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    throw error;
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.warn('[authService] Supabase global signOut error, falling back to local signOut:', error.message);
+      await supabase.auth.signOut({ scope: 'local' });
+    }
+  } catch (err) {
+    console.warn('[authService] Unexpected error during signOut, fallback to local signOut:', err);
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch {
+      // Abaikan error fallback
+    }
   }
 }

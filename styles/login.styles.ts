@@ -5,7 +5,7 @@ import { colors, radius, spacing, typography } from "../constants/theme";
 export const loginStyles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#E6F1FC",
+    backgroundColor: "#EFF6FF",
   },
 
   gradientContainer: {
@@ -85,7 +85,7 @@ export const loginStyles = StyleSheet.create({
   brandTitle: {
     fontSize: 21,
     fontWeight: "800",
-    color: "#1E293B",
+    color: "#172554",
     letterSpacing: -0.3,
   },
 
@@ -249,18 +249,6 @@ export const loginStyles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  errorIcon: {
-    marginRight: 8,
-  },
-
-  errorText: {
-    flex: 1,
-    fontSize: 12.5,
-    color: "#DC2626",
-    fontWeight: "500",
-    lineHeight: 17,
-  },
-
   successBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -273,78 +261,85 @@ export const loginStyles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  successIcon: {
+  alertIcon: {
     marginRight: 8,
+  },
+
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: "#DC2626",
+    lineHeight: 18,
   },
 
   successText: {
     flex: 1,
-    fontSize: 12.5,
+    fontSize: 13,
     color: "#16A34A",
-    fontWeight: "500",
-    lineHeight: 17,
-  },
-
-  buttonDisabled: {
-    opacity: 0.65,
+    lineHeight: 18,
   },
 
   // Form Fields
-  fieldGroup: {
+  inputGroup: {
     marginBottom: 16,
   },
 
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#1E293B",
-    marginBottom: 7,
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#334155",
+    marginBottom: 6,
   },
 
-  inputContainer: {
+  requiredStar: {
+    color: "#EF4444",
+  },
+
+  inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 50,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.2,
     borderColor: "#E2E8F0",
     borderRadius: 14,
     paddingHorizontal: 14,
+    minHeight: 48,
   },
 
-  inputLeadingIcon: {
+  inputIcon: {
     marginRight: 10,
   },
 
-  input: {
+  textInput: {
     flex: 1,
     fontSize: 14,
     color: "#0F172A",
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
 
-  inputTrailingIcon: {
-    marginLeft: 8,
+  eyeIcon: {
+    padding: 6,
+    marginLeft: 4,
   },
 
-  // Options: Ingat saya & Lupa kata sandi?
+  // Options Row
   optionsRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 20,
     marginTop: 2,
-    marginBottom: 18,
   },
 
-  rememberContainer: {
+  rememberMeContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
 
-  rememberText: {
-    fontSize: 13,
-    color: "#64748B",
+  rememberMeText: {
     marginLeft: 7,
+    fontSize: 13,
+    color: "#475569",
     fontWeight: "500",
   },
 
@@ -368,6 +363,10 @@ export const loginStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 4,
+  },
+
+  buttonDisabled: {
+    opacity: 0.65,
   },
 
   // Divider
@@ -462,36 +461,34 @@ export const loginStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     color: "#0F172A",
+    marginBottom: 2,
   },
 
   accountEmail: {
     fontSize: 12,
     color: "#64748B",
-    marginTop: 2,
+    marginBottom: 4,
   },
 
   badgeWrapper: {
     alignSelf: "flex-start",
-    backgroundColor: "#DBEAFE",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radius.full,
-    marginTop: 5,
   },
 
   accountRoleBadge: {
     fontSize: 10,
-    color: "#2563EB",
     fontWeight: "700",
-    letterSpacing: 0.4,
+    color: "#2563EB",
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    overflow: "hidden",
   },
 
-  // Prototype Note
   noteText: {
-    fontSize: 12,
-    color: "#94A3B8",
     textAlign: "center",
-    marginTop: 14,
-    fontStyle: "italic",
+    fontSize: 11.5,
+    color: "#94A3B8",
+    marginTop: 8,
   },
 });

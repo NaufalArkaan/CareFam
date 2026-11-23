@@ -8,7 +8,7 @@ export const LOGIN_CONTENT: LoginContent[] = [
     title: "",
     subtitle: "",
     buttonLabel: "Masuk",
-    accentColor: "#2563EB",
+    accentColor: "#2563EB", // CareFam Royal Blue
     altLabel: "Masuk sebagai admin",
     altRoute: "/admin/login",
   },

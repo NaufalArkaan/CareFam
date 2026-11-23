@@ -12,18 +12,20 @@ import { getSummaryText, isFullWidthCard } from '../utils/features';
 import { colors } from '../constants/theme';
 import { styles } from '../styles/userDashboard.styles';
 import { signOutUser } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export default function UserDashboardScreen() {
   const router = useRouter();
+  const { signOut } = useAuth();
 
   // CHECKPOINT 5: Sign Out handler resmi Supabase Auth
   const handleLogout = async () => {
     try {
+      await signOut();
       await signOutUser();
-    } catch {
-      // Abaikan error jaringan agar user tetap bisa kembali ke layar login
-    } finally {
       router.replace('/login');
+    } catch (error) {
+      console.error("[UserDashboard] Gagal melakukan logout:", error);
     }
   };
 

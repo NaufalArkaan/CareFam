@@ -1,10 +1,10 @@
 import type { Session, User } from "@supabase/supabase-js";
 import React, {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -19,6 +19,8 @@ export interface AuthContextType {
   user: User | null;
   /** Status pemulihan sesi awal (rehydration). Bernilai true saat aplikasi memeriksa storage awal */
   isLoading: boolean;
+  /** Fungsi resmi untuk mengakhiri sesi dan membersihkan state auth seketika */
+  signOut: () => Promise<void>;
 }
 
 /**
@@ -34,6 +36,7 @@ export interface AuthProviderProps {
  * AuthProvider membungkus aplikasi dan menyediakan status sesi Supabase global.
  * - CHECKPOINT 2: Rehidrasi sesi awal (initial session) saat startup.
  * - CHECKPOINT 3: Berlangganan perubahan status auth secara real-time via onAuthStateChange().
+ * - CHECKPOINT 5: Mekanisme signOut sinkron & lokal untuk mencegah race condition.
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -119,8 +122,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
+  /**
+   * CHECKPOINT 5: Sign Out terkoordinasi
+   * Menjamin pembersihan state lokal React seketika untuk mencegah Route Guard memantulkan
+   * navigasi kembali ke dashboard, lalu membersihkan token di SecureStore dan Supabase.
+   */
+  const signOut = async () => {
+    // 1. Bersihkan state lokal React secara instan
+    setSession(null);
+    setUser(null);
+
+    // 2. Jalankan signOut pada Supabase dan bersihkan storage lokal SecureStore
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        // Silent fallback
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user, isLoading }}>
+    <AuthContext.Provider value={{ session, user, isLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

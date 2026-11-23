@@ -1,22 +1,49 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { AdminStat } from '../../types';
-import { colors, spacing, radius, typography } from '../../constants/theme';
 import { formatStatValue } from '../../utils/adminDashboard';
 
 interface StatCardProps {
   stat: AdminStat;
 }
 
+// Map icon string atau fallback icon profesional
+const getStatIconName = (stat: AdminStat): keyof typeof Ionicons.glyphMap => {
+  switch (stat.id) {
+    case 1:
+      return 'people';
+    case 2:
+      return 'heart';
+    case 3:
+      return 'business';
+    case 4:
+      return 'document-text';
+    default:
+      return 'stats-chart';
+  }
+};
+
 export function StatCard({ stat }: StatCardProps) {
+  const iconName = getStatIconName(stat);
+
   return (
-    // RUBRIK: Inline & External Styles
-    // Alasan inline style: Warna border atas kartu dinamis mengikuti warna aksen khusus tiap statistik dari data stat.color
-    <View style={[styles.card, { borderTopColor: stat.color }]}>
+    <View style={styles.card}>
       <View style={styles.content}>
-        <View style={styles.iconWrapper}>
-          <Text style={styles.icon}>{stat.icon}</Text>
+        <View style={styles.topRow}>
+          {/* Wadah ikon beraksen tint pastel lembut */}
+          <View
+            style={[
+              styles.iconBadge,
+              { backgroundColor: `${stat.color}12`, borderColor: `${stat.color}25` },
+            ]}
+          >
+            <Ionicons name={iconName} size={20} color={stat.color} />
+          </View>
+          {/* Titik indikator minimalis */}
+          <View style={[styles.indicatorDot, { backgroundColor: stat.color }]} />
         </View>
+
         <View style={styles.textWrapper}>
           <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
             {formatStatValue(stat.value)}
@@ -32,46 +59,62 @@ export function StatCard({ stat }: StatCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    width: '48%', // Mengisi 48% lebar container untuk grid 2 kolom yang presisi tanpa gap crash
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderTopWidth: 4, // Memberikan aksen yang lebih solid dan modern dibanding block
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: spacing.md,
+    borderColor: '#E2E8F0',
+    marginBottom: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   content: {
-    padding: spacing.md,
-    flexDirection: 'column',
+    padding: 14,
+    minHeight: 124,
     justifyContent: 'space-between',
-    minHeight: 120, // Menjaga konsistensi tinggi kartu meskipun teks bervariasi panjangnya
   },
-  iconWrapper: {
-    marginBottom: spacing.sm,
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  icon: {
-    fontSize: 28,
+  iconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  indicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   textWrapper: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    marginTop: 2,
   },
   value: {
-    fontSize: typography.heading,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-    letterSpacing: -0.5, // Tampilan font angka lebih rapat dan modern
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.5,
+    marginBottom: 2,
   },
   label: {
-    fontSize: typography.caption,
-    color: colors.muted,
-    lineHeight: 18,
+    fontSize: 12,
+    color: '#64748B',
     fontWeight: '500',
+    lineHeight: 16,
   },
 });
