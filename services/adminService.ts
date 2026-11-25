@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { getTotalReportsCount } from './reportService';
+import { getTotalHospitalsCount } from './hospitalService';
 import {
   AdminDashboardMetrics,
   AdminUserProfile,
@@ -10,8 +12,8 @@ import {
  * Mengambil metrik kuantitatif aktual untuk Dashboard Admin dari database Supabase.
  * - Total Pengguna: Menghitung baris profiles dengan role = 'user' (mengecualikan admin).
  * - Anggota Keluarga: Menghitung seluruh anggota keluarga di tabel family_members.
- * - Fasilitas Kesehatan: null (karena tabel master fasilitas kesehatan belum dibuat di database).
- * - Laporan Masuk: null (karena tabel laporan/pengaduan belum dibuat di database).
+ * - Fasilitas Kesehatan: Menghitung baris di tabel hospitals (jika tabel aktif).
+ * - Laporan Masuk: Menghitung seluruh laporan pengaduan masuk dari tabel reports.
  */
 export async function getAdminDashboardStats(): Promise<Omit<AdminDashboardMetrics, 'isLoading' | 'error'>> {
   try {
@@ -34,14 +36,27 @@ export async function getAdminDashboardStats(): Promise<Omit<AdminDashboardMetri
       console.error('[adminService] Gagal menghitung anggota keluarga:', familyError.message);
     }
 
-    // 3. Fasilitas Kesehatan & Laporan Masuk:
-    // Sesuai ketentuan, karena tabel belum tersedia di database,
-    // nilai diatur ke null agar UI menampilkan indikator belum tersedia '—' (bukan angka 0).
+    // 3. Query count fasilitas kesehatan dari tabel hospitals
+    let facilitiesCount: number | null = null;
+    try {
+      facilitiesCount = await getTotalHospitalsCount();
+    } catch {
+      facilitiesCount = null;
+    }
+
+    // 4. Laporan Masuk: Menghitung laporan aktual dari tabel reports
+    let reportsCount: number | null = null;
+    try {
+      reportsCount = await getTotalReportsCount();
+    } catch {
+      reportsCount = null;
+    }
+
     return {
       totalUsers: usersCount ?? null,
       totalFamilyMembers: familyCount ?? null,
-      totalFacilities: null,
-      totalReports: null,
+      totalFacilities: facilitiesCount,
+      totalReports: reportsCount,
     };
   } catch (err) {
     console.error('[adminService] Kesalahan tak terduga saat mengambil statistik admin:', err);

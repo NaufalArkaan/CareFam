@@ -8,6 +8,8 @@ export interface FamilyMemberCardProps {
   isSelected: boolean;
   onSelect: (id: string) => void;
   onViewDetail?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({
@@ -15,6 +17,8 @@ export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({
   isSelected,
   onSelect,
   onViewDetail,
+  onEdit,
+  onDelete,
 }) => {
   return (
     <View style={[styles.card, isSelected && styles.cardSelected]}>
@@ -51,20 +55,42 @@ export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({
         ) : null}
       </View>
 
-      {/* Aksi Pemilihan Profil & Detail */}
+      {/* Aksi Pemilihan Profil, Edit, Hapus, & Detail */}
       <View style={styles.cardFooter}>
-        {onViewDetail ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Lihat detail ${member.name}`}
-            style={styles.detailButton}
-            onPress={() => onViewDetail(member.id)}
-          >
-            <Text style={styles.detailButtonText}>Detail Profil →</Text>
-          </Pressable>
-        ) : (
-          <View />
-        )}
+        <View style={styles.cardActionGroup}>
+          {onViewDetail ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Lihat detail ${member.name}`}
+              style={styles.detailButton}
+              onPress={() => onViewDetail(member.id)}
+            >
+              <Text style={styles.detailButtonText}>Detail Profil →</Text>
+            </Pressable>
+          ) : null}
+
+          {onEdit ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Edit data ${member.name}`}
+              style={styles.editButton}
+              onPress={() => onEdit(member.id)}
+            >
+              <Text style={styles.editButtonText}>✏️ Edit</Text>
+            </Pressable>
+          ) : null}
+
+          {onDelete ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Hapus ${member.name} dari daftar keluarga`}
+              style={styles.deleteButton}
+              onPress={() => onDelete(member.id)}
+            >
+              <Text style={styles.deleteButtonText}>🗑️ Hapus</Text>
+            </Pressable>
+          ) : null}
+        </View>
 
         {isSelected ? (
           <View style={styles.activeIndicator}>

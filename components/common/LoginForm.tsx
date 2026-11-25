@@ -6,6 +6,7 @@ import { Href, Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   SafeAreaView,
@@ -103,18 +104,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
           callsign,
         });
 
-        // Tangani kemungkinan konfirmasi email
-        if (data.session) {
-          // Berhasil mendaftar dan langsung mendapatkan sesi
-          router.replace(homeRoute as Href);
-        } else {
-          // Memerlukan konfirmasi email
-          setSuccessMessage(
-            "Pendaftaran berhasil! Silakan periksa email Anda untuk konfirmasi aktivasi akun, kemudian masuk."
-          );
-          setIsRegistering(false);
-          setPassword("");
-        }
+        // Tampilkan notifikasi akun berhasil dibuat dan arahkan pengguna kembali ke Login
+        const successMsg = data.session
+          ? "Akun berhasil dibuat! Silakan masukkan kata sandi Anda untuk masuk ke Dashboard."
+          : "Akun berhasil dibuat! Silakan periksa email Anda jika diperlukan konfirmasi aktivasi, lalu masuk.";
+
+        setSuccessMessage(successMsg);
+        setIsRegistering(false);
+        setPassword("");
+        setCallsign("");
+
+        Alert.alert("Registrasi Berhasil", successMsg);
       } else {
         // CHECKPOINT 4: Sign In via Supabase
         await signInUser({

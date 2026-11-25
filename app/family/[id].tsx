@@ -1,10 +1,24 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { Header } from "../../components/common/Header";
 import { colors } from "../../constants/theme";
-import { getStoredFamilyMembers } from "../../data/familyMembers";
-import { getFamilyMemberDetail } from "../../services/familyService";
+import {
+  deleteStoredFamilyMember,
+  getStoredFamilyMembers,
+} from "../../data/familyMembers";
+import {
+  deleteFamilyMember,
+  getFamilyMemberDetail,
+} from "../../services/familyService";
 import { styles } from "../../styles/family.styles";
 import { FamilyMember } from "../../types";
 
@@ -182,6 +196,63 @@ export default function FamilyMemberDetailScreen() {
                 <Text style={styles.detailValue}>{member.allergies}</Text>
               </View>
             ) : null}
+          </View>
+
+          {/* Tombol Aksi CRUD: Edit & Hapus Anggota */}
+          <View style={{ marginTop: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Edit Anggota Keluarga"
+                style={[styles.editButton, { flex: 1, minHeight: 44, flexDirection: 'row', gap: 6 }]}
+                onPress={() => router.push(`/family/edit?id=${member.id}`)}
+              >
+                <Text style={[styles.editButtonText, { fontSize: 14 }]}>✏️ Edit Profil</Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Hapus Anggota Keluarga"
+                style={[styles.deleteButton, { flex: 1, minHeight: 44, flexDirection: 'row', gap: 6 }]}
+                onPress={() => {
+                  const doDelete = async () => {
+                    try {
+                      deleteStoredFamilyMember(member.id);
+                      await deleteFamilyMember(member.id);
+                      if (Platform.OS === 'web') {
+                        window.alert('Data anggota keluarga berhasil dihapus.');
+                      } else {
+                        Alert.alert('Berhasil', 'Data anggota keluarga berhasil dihapus.');
+                      }
+                      router.replace('/family');
+                    } catch (err: any) {
+                      if (Platform.OS === 'web') {
+                        window.alert(`Gagal menghapus: ${err?.message || 'Kesalahan database'}`);
+                      } else {
+                        Alert.alert('Gagal Menghapus', err?.message || 'Terjadi kesalahan saat menghapus data.');
+                      }
+                    }
+                  };
+
+                  if (Platform.OS === 'web') {
+                    if (window.confirm(`Apakah Anda yakin ingin menghapus "${member.name}" dari daftar keluarga?`)) {
+                      doDelete();
+                    }
+                  } else {
+                    Alert.alert(
+                      'Konfirmasi Hapus',
+                      `Apakah Anda yakin ingin menghapus "${member.name}" dari daftar keluarga?`,
+                      [
+                        { text: 'Batal', style: 'cancel' },
+                        { text: 'Hapus', style: 'destructive', onPress: doDelete },
+                      ]
+                    );
+                  }
+                }}
+              >
+                <Text style={[styles.deleteButtonText, { fontSize: 14 }]}>🗑️ Hapus Anggota</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>

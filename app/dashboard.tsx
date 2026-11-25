@@ -13,6 +13,8 @@ import { styles } from '../styles/userDashboard.styles';
 import { signOutUser } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { getUserDashboardData, UserDashboardData } from '../services/familyService';
+import { getRecentPublishedArticles } from '../services/educationService';
+import { HealthEducationArticle } from '../types/admin';
 import { InfoItem } from '../types';
 
 export default function UserDashboardScreen() {
@@ -27,14 +29,25 @@ export default function UserDashboardScreen() {
     memberCount: 0,
     isLoading: true,
   });
+  const [recentArticles, setRecentArticles] = useState<HealthEducationArticle[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Memuat data aktual dari Supabase
   const loadData = useCallback(async (refresh = false) => {
     if (refresh) setIsRefreshing(true);
-    const data = await getUserDashboardData();
-    setDashboardData(data);
-    if (refresh) setIsRefreshing(false);
+    try {
+      const [data, articles] = await Promise.all([
+        getUserDashboardData(),
+        getRecentPublishedArticles(2),
+      ]);
+      setDashboardData(data);
+      setRecentArticles(articles);
+    } catch {
+      const data = await getUserDashboardData();
+      setDashboardData(data);
+    } finally {
+      if (refresh) setIsRefreshing(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -144,6 +157,57 @@ export default function UserDashboardScreen() {
             })}
           </View>
         </View>
+
+        {/* Seksi Berita & Edukasi Kesehatan Terkini */}
+        {recentArticles.length > 0 ? (
+          <View style={styles.section}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <View>
+                <Text style={styles.sectionTitle}>Berita & Edukasi Kesehatan</Text>
+                <Text style={styles.sectionSummary}>Rujukan medis preventif keluarga</Text>
+              </View>
+              <Link href="/education" asChild>
+                <Pressable>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
+                    Lihat Semua →
+                  </Text>
+                </Pressable>
+              </Link>
+            </View>
+
+            {recentArticles.map((art) => (
+              <Pressable
+                key={art.id}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 14,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginBottom: 10,
+                }}
+                onPress={() => router.push(`/education/${art.id}` as any)}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <View style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary }}>
+                      {art.category}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>
+                    {art.author_name || 'Tim Medis CareFam'}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 14.5, fontWeight: 'bold', color: colors.text, marginBottom: 4 }}>
+                  {art.title}
+                </Text>
+                <Text style={{ fontSize: 12.5, color: colors.muted, lineHeight: 18 }} numberOfLines={2}>
+                  {art.summary}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         {/* Disclaimer */}
         <View style={styles.disclaimerCard}>

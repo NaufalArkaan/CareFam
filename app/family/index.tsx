@@ -1,15 +1,28 @@
 import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { FamilyMemberCard } from "../../components/cards/FamilyMemberCard";
 import { Header } from "../../components/common/Header";
 import { colors } from "../../constants/theme";
 import {
+  deleteStoredFamilyMember,
   getStoredFamilyMembers,
   INITIAL_FAMILY_MEMBERS,
   subscribeFamilyMembers,
 } from "../../data/familyMembers";
-import { getFamilyMembers } from "../../services/familyService";
+import {
+  deleteFamilyMember,
+  getFamilyMembers,
+} from "../../services/familyService";
 import { styles } from "../../styles/family.styles";
 import { FamilyMember } from "../../types";
 
@@ -103,6 +116,61 @@ export default function FamilyManagementScreen() {
     rout.push(`/family/${id}`);
   };
 
+  // Handler UPDATE: Navigasi ke halaman form edit membawa ID anggota terpilih
+  const handleEditMember = (id: string) => {
+    rout.push(`/family/edit?id=${id}`);
+  };
+
+  // Handler DELETE dengan Optimistic UI:
+  // 1. Simpan backup
+  // 2. Hapus langsung dari tampilan secara instan
+  // 3. Eksekusi query delete ke Supabase di background
+  // 4. Rollback jika database gagal
+  const handleDeleteMember = async (id: string, name: string) => {
+    const executeDelete = async () => {
+      const backupMembers = [...members];
+      // Optimistic UI: langsung filter keluar dari tampilan
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+      deleteStoredFamilyMember(id);
+
+      try {
+        await deleteFamilyMember(id);
+      } catch (err: any) {
+        console.warn("[FamilyScreen] Gagal delete di Supabase:", err);
+        // Rollback state lokal jika gagal
+        if (Platform.OS === "web") {
+          window.alert(`Gagal menghapus: ${err?.message || "Kesalahan database"}`);
+        } else {
+          Alert.alert("Gagal Menghapus", err?.message || "Terjadi kesalahan saat menghapus data.");
+        }
+        setMembers(backupMembers);
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed =
+        typeof window !== "undefined"
+          ? window.confirm(`Apakah Anda yakin ingin menghapus data "${name}"?`)
+          : true;
+      if (confirmed) {
+        executeDelete();
+      }
+    } else {
+      Alert.alert(
+        "Hapus Anggota Keluarga",
+        `Apakah Anda yakin ingin menghapus data "${name}"? Tindakan ini tidak dapat dibatalkan.`,
+        [
+          { text: "Batal", style: "cancel" },
+          {
+            text: "Hapus",
+            style: "destructive",
+            onPress: executeDelete,
+          },
+        ]
+      );
+    }
+  };
+
   // Handler simulasi kosongkan / kembalikan data untuk demo pengujian
   const handleToggleSimulation = () => {
     if (members.length > 0) {
@@ -173,6 +241,8 @@ export default function FamilyManagementScreen() {
               isSelected={selectedMemberId === member.id}
               onSelect={handleSelectMember}
               onViewDetail={handleViewDetail}
+              onEdit={handleEditMember}
+              onDelete={(id) => handleDeleteMember(id, member.name)}
             />
           ))
         ) : (

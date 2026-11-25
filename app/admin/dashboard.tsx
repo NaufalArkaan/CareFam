@@ -41,6 +41,8 @@ const getMenuIcon = (id: number): keyof typeof Ionicons.glyphMap => {
       return "radio";
     case 6:
       return "settings";
+    case 7:
+      return "document-text";
     default:
       return "grid";
   }
@@ -61,6 +63,8 @@ const getMenuStyle = (id: number) => {
       return { bg: "#FFF1F2", border: "#FECDD3", color: "#E11D48" };
     case 6: // System Settings: Slate/Grey
       return { bg: "#F1F5F9", border: "#CBD5E1", color: "#475569" };
+    case 7: // Medical Records: Teal
+      return { bg: "#F0FDFA", border: "#99F6E4", color: "#0D9488" };
     default:
       return { bg: "#F8FAFC", border: "#E2E8F0", color: "#64748B" };
   }
@@ -127,14 +131,14 @@ export default function AdminDashboardScreen() {
         {
           id: 3,
           label: "Fasilitas Kesehatan",
-          value: "—", // Indikator belum ada tabel di database
+          value: data.totalFacilities ?? 0,
           icon: "business",
           color: "#7C3AED",
         },
         {
           id: 4,
           label: "Laporan Masuk",
-          value: "—", // Indikator belum ada tabel di database
+          value: data.totalReports ?? 0,
           icon: "document-text",
           color: "#D97706",
         },
@@ -441,13 +445,6 @@ export default function AdminDashboardScreen() {
                       >
                         {item.title}
                       </Text>
-
-                      {/* Badge Mini Aktif */}
-                      {isActive ? (
-                        <View style={styles.activeMiniBadge}>
-                          <Text style={styles.activeMiniBadgeText}>Aktif</Text>
-                        </View>
-                      ) : null}
                     </Pressable>
                   );
                 })}

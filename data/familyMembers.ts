@@ -51,3 +51,16 @@ export const resetStoredFamilyMembers = (): void => {
   listeners.forEach((listener) => listener());
 };
 
+export const updateStoredFamilyMember = (updatedMember: FamilyMember): void => {
+  familyMembersStore = familyMembersStore.map((member) =>
+    member.id === updatedMember.id ? { ...member, ...updatedMember } : member
+  );
+  listeners.forEach((listener) => listener());
+};
+
+export const deleteStoredFamilyMember = (id: string): void => {
+  familyMembersStore = familyMembersStore.filter((member) => member.id !== id);
+  listeners.forEach((listener) => listener());
+};
+
+

@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import { supabase } from "../lib/supabase";
+import { isRegistrationInProgress } from "../services/authService";
 
 /**
  * Kontrak tipe untuk AuthContext.
@@ -88,6 +89,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, currentSession) => {
       if (!isMounted) return;
+
+      // Cegah sesi otomatis dari proses registrasi baru agar pengguna tidak langsung diarahkan ke Dashboard
+      if (
+        isRegistrationInProgress() &&
+        (event === "SIGNED_IN" || event === "USER_UPDATED")
+      ) {
+        return;
+      }
 
       switch (event) {
         case "INITIAL_SESSION":

@@ -65,3 +65,6 @@ export interface FamilyMember {
 // ===== Cuaca & External API (Modul 3 - Robi) =====
 export * from './weather';
 
+// ===== Modul Administrator & Fasilitas Kesehatan =====
+export * from './admin';
+

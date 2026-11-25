@@ -16,7 +16,7 @@ export const USER_FEATURES: FeatureItem[] = [
     description: 'Riwayat diagnosis dan dokumen',
     icon: '📋',
     route: '/medical-records',
-    status: 'soon',
+    status: 'active',
   },
   {
     id: 3,
@@ -41,6 +41,14 @@ export const USER_FEATURES: FeatureItem[] = [
     icon: '⏰',
     route: '/health-reminder',
     status: 'soon',
+  },
+  {
+    id: 6,
+    title: 'Edukasi Kesehatan',
+    description: 'Artikel dan berita kesehatan keluarga terpercaya',
+    icon: '📚',
+    route: '/education',
+    status: 'active',
   },
 ];
 
